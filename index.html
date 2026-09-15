@@ -1,180 +1,137 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WebAR: โครงสร้าง DNA (ม.6)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-width=1.0">
+  <title>WebAR: โครงสร้าง DNA (ม.6)</title>
+  
+  <!-- เรียกใช้ไลบรารี model-viewer -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
 
-<!-- เรียกใช้ไลบรารี model-viewer -->
-<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+  <style>
+    body { margin: 0; font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; }
+    
+    /* ตั้งค่าขนาดหน้าจอของ AR */
+    model-viewer {
+      width: 100vw;
+      height: 100vh;
+      --poster-color: transparent;
+    }
 
-<style>
-  body {
-    margin: 0;
-    font-family: "Sarabun", sans-serif;
-    background-color: #f05418;
-    overflow: hidden;
-  }
+    /* กล่องข้อความแนวคิดหลัก (คำโปรย) */
+    .intro-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      pointer-events: none; /* ให้ทะลุไปกดโมเดล 3D ได้ */
+    }
+    .intro-panel h2 { margin: 0 0 10px 0; color: #1a56db; font-size: 18px; }
+    .intro-panel p { margin: 0; font-size: 14px; color: #333; line-height: 1.5; }
 
-  /* ตั้งค่าขนาดหน้าจอของ AR model-viewer */
-  model-viewer {
-    width: 100vw;
-    height: 100vh;
-    --poster-color: transparent;
-  }
+    /* การตกแต่งปุ่ม Hotspot บน 3D */
+    .hotspot-btn {
+      background-color: #ff3b30;
+      border-radius: 50%;
+      border: 2px solid white;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .hotspot-btn:focus { outline: none; transform: scale(1.2); }
 
-  /* กล่องข้อความแนวคิดหลัก (คำโปรย) */
-  .intro-panel {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    pointer-events: none; /* ให้ทะลุไปกดโมเดล 3D ได้ */
-    z-index: 5;
-  }
-  .intro-panel h2 {
-    margin: 0 0 10px 0;
-    color: #1a56db;
-    font-size: 18px;
-  }
-  .intro-panel p {
-    margin: 0;
-    font-size: 14px;
-    color: #333;
-    line-height: 1.5;
-  }
-
-  /* การตกแต่งปุ่ม Hotspot บน 3D */
-  .hotspot-btn {
-    background-color: #ff3b30;
-    border-radius: 50%;
-    border: 2px solid white;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  .hotspot-btn:focus {
-    outline: none;
-    transform: scale(1.2);
-  }
-
-  /* กล่องข้อความ Pop-up เมื่อกดปุ่ม */
-  .annotation {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    font-size: 14px;
-    left: 30px;
-    padding: 10px 15px;
-    position: absolute;
-    top: 50%;
-    color: #333;
-    display: none; /* ซ่อนไว้ก่อน */
-    transform: translateY(-50%);
-    width: 250px;
-    z-index: 10;
-  }
-
-  /* แสดงข้อความเมื่อปุ่มถูกกด (Active) */
-  .hotspot-btn.active .annotation {
-    display: block;
-  }
-  .annotation-title {
-    font-weight: bold;
-    color: #1a56db;
-    margin-bottom: 5px;
-  }
-
-  /* ปรับแต่งปุ่ม AR ดั้งเดิมของ model-viewer ให้สวยงาม */
-  #ar-button {
-    background: #ffffff;
-    border-radius: 4px;
-    border: none;
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    padding: 10px 16px;
-    font-family: 'Sarabun', sans-serif;
-    font-weight: bold;
-    color: #333;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    cursor: pointer;
-    z-index: 10;
-  }
-</style>
+    /* กล่องข้อความ Pop-up เมื่อกดปุ่ม */
+    .annotation {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      color: #333;
+      display: none; /* ซ่อนไว้ก่อน */
+      font-size: 14px;
+      left: 30px;
+      padding: 10px 15px;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 250px;
+      z-index: 10;
+    }
+    
+    /* แสดงข้อความเมื่อปุ่มถูกกด (Active) */
+    .hotspot-btn.active .annotation { display: block; }
+    .annotation-title { font-weight: bold; color: #1a56db; margin-bottom: 5px; }
+  </style>
 </head>
-
 <body>
 
-<model-viewer
-  src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-  ar
-  ar-modes="webxr scene-viewer quick-look"
-  camera-controls
-  auto-rotate>
+  <!-- แทนที่ src ด้วยไฟล์โมเดล DNA ของคุณ (เช่น dna_model.glb) -->
+  <model-viewer 
+    src="https://raw.githubusercontent.com/GordenSun/LearningCell/main/app/public/models/dna.glb"
+    ar 
+    ar-modes="webxr scene-viewer quick-look" 
+    camera-controls 
+    auto-rotate>
+    
+    <!-- ปุ่มที่ 1: แกนหลัก -->
+    <!-- data-position คือพิกัด X Y Z บนโมเดล 3D ต้องปรับแก้ให้ตรงกับโมเดลของคุณ -->
+    <button class="hotspot-btn" slot="hotspot-1" data-position="0.5 1 0.2">
+      <div class="annotation">
+        <div class="annotation-title">1. แกนหลัก (Backbone)</div>
+        เปรียบเสมือนราวบันได สร้างจากน้ำตาลดีออกซีไรโบสและฟอสเฟต เชื่อมด้วยพันธะฟอสโฟไดเอสเทอร์
+      </div>
+    </button>
 
-  <!-- ปุ่มกดเพื่อเปิด AR (View in your space) -->
-  <button slot="ar-button" id="ar-button">
-    📦 วางในห้องของคุณ (AR)
-  </button>
+    <!-- ปุ่มที่ 2: คู่เบส -->
+    <button class="hotspot-btn" slot="hotspot-2" data-position="-0.2 1.5 -0.1">
+      <div class="annotation">
+        <div class="annotation-title">2. คู่เบส (Base Pairs)</div>
+        A จับคู่ T และ C จับคู่ G เสมอ การเรียงลำดับนี้คือรหัสพันธุกรรมสำหรับสร้างโปรตีน
+      </div>
+    </button>
 
-  <!-- ปุ่มที่ 1: แกนหลัก -->
-  <button class="hotspot-btn" slot="hotspot-1" data-position="-0.5 1 0.2" data-normal="0 0 1">
-    <div class="annotation">
-      <div class="annotation-title">1. แกนหลัก (Backbone)</div>
-      เปรียบเสมือนราวบันได สร้างจากน้ำตาลดีออกซีไรโบสและฟอสเฟต เชื่อมด้วยพันธะฟอสโฟไดเอสเทอร์
-    </div>
-  </button>
+    <!-- ปุ่มที่ 3: พันธะไฮโดรเจน -->
+    <button class="hotspot-btn" slot="hotspot-3" data-position="0.1 2 0">
+      <div class="annotation">
+        <div class="annotation-title">3. พันธะไฮโดรเจน</div>
+        คู่ A-T เชื่อมด้วย 2 พันธะ ส่วน C-G เชื่อมด้วย 3 พันธะ (C-G เยอะจะทนความร้อนได้ดี)
+      </div>
+    </button>
 
-  <!-- ปุ่มที่ 2: คู่เบส -->
-  <button class="hotspot-btn" slot="hotspot-2" data-position="0.2 1.5 -0.1" data-normal="0 0 1">
-    <div class="annotation">
-      <div class="annotation-title">2. คู่เบส (Base Pairs)</div>
-      A จับคู่ T และ C จับคู่ G เสมอ การเรียงลำดับนี้คือรหัสพันธุกรรมสำหรับสร้างโปรตีน
-    </div>
-  </button>
+    <!-- ปุ่มที่ 4: ทิศทางสาย -->
+    <button class="hotspot-btn" slot="hotspot-4" data-position="0.8 2.5 0.5">
+      <div class="annotation">
+        <div class="annotation-title">4. ทิศทางสาย (Antiparallel)</div>
+        สาย DNA เรียงสวนทางกัน สายหนึ่ง 5'→3' อีกสาย 3'→5' เสมอ
+      </div>
+    </button>
+  </model-viewer>
 
-  <!-- ปุ่มที่ 3: พันธะไฮโดรเจน -->
-  <button class="hotspot-btn" slot="hotspot-3" data-position="0.1 2 0" data-normal="0 0 1">
-    <div class="annotation">
-      <div class="annotation-title">3. พันธะไฮโดรเจน</div>
-      คู่ A-T เชื่อมด้วย 2 พันธะ ส่วน C-G เชื่อมด้วย 3 พันธะ (C-G เยอะจะทนความร้อนได้ดีกว่า)
-    </div>
-  </button>
+  <!-- คำโปรยหน้าแรก -->
+  <div class="intro-panel">
+    <h2>โครงสร้าง DNA</h2>
+    <p>สารพันธุกรรมโครงสร้างเกลียวคู่ (Double helix) เกิดจากหน่วยย่อยนิวคลีโอไทด์เรียงต่อกัน ลำดับเบสบนสายคือรหัสลับควบคุมลักษณะทางพันธุกรรม</p>
+  </div>
 
-  <!-- ปุ่มที่ 4: ทิศทางสาย -->
-  <button class="hotspot-btn" slot="hotspot-4" data-position="0.3 2.5 0.5" data-normal="0 0 1">
-    <div class="annotation">
-      <div class="annotation-title">4. ทิศทางสาย (Antiparallel)</div>
-      สาย DNA เรียงสวนทางกัน สายหนึ่ง 5'->3' อีกสาย 3'->5' เสมอ
-    </div>
-  </button>
-
-</model-viewer>
-
-<!-- คำโปรยหน้าแรก -->
-<div class="intro-panel">
-  <h2>โครงสร้าง DNA</h2>
-  <p>สารพันธุกรรมโครงสร้างเกลียวคู่ (Double helix) เกิดจากหน่วยย่อยนิวคลีโอไทด์เรียงต่อกัน ลำดับเบสบนสายคือรหัสลับควบคุมลักษณะทางพันธุกรรม</p>
-</div>
-
-<!-- Script สำหรับควบคุมการเปิด/ปิด Pop-up -->
-<script>
-  const hotspots = document.querySelectorAll(".hotspot-btn");
-  hotspots.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      hotspots.forEach(otherBtn => {
-        if (otherBtn !== btn) otherBtn.classList.remove('active');
+  <!-- Script สำหรับควบคุมการเปิด/ปิด Pop-up -->
+  <script>
+    const hotspots = document.querySelectorAll('.hotspot-btn');
+    hotspots.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        // ปิดปุ่มอื่นที่เปิดอยู่
+        hotspots.forEach(otherBtn => {
+          if (otherBtn !== btn) otherBtn.classList.remove('active');
+        });
+        // สลับสถานะเปิด/ปิด ปุ่มที่ถูกกด
+        btn.classList.toggle('active');
       });
-      btn.classList.toggle('active');
     });
-  });
-</script>
+  </script>
 
 </body>
 </html>
+
